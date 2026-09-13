@@ -1,0 +1,2508 @@
+{
+  "schemaVersion": "transland-1.0.0",
+  "databaseId": "TRANSLAND_2026_DEMO_V1",
+  "generatedAt": "2026-09-13",
+  "product": {
+    "name": "TransLand",
+    "longName": "Sistem Perlindungan dan Integrasi Data Tanah Transmigrasi Berbasis Risiko",
+    "tagline": "Identifikasi dini. Status terlacak. Risiko ditindaklanjuti.",
+    "coreQuestion": "Bagaimana negara memastikan setiap bidang tanah transmigrasi dapat diidentifikasi, dilacak statusnya, dan dilindungi sebelum kehilangan kepastian hukum?",
+    "problemStatement": "Masalah tanah transmigrasi bukan semata-mata karena tanah tersebut belum bersertifikat, tetapi karena negara belum memiliki mekanisme terintegrasi untuk mengetahui bidang mana yang paling rentan, mengapa rentan, dan tindakan apa yang harus diprioritaskan.",
+    "architecture": "federated land-risk registry and case orchestration layer",
+    "primaryUsers": [
+      "Kementerian Transmigrasi — unit pertanahan/kawasan",
+      "Dinas/OPD yang menangani transmigrasi",
+      "ATR/BPN",
+      "Kementerian Kehutanan",
+      "Kementerian ESDM",
+      "BKPM/OSS",
+      "Kemenkeu/DJKN bila terdapat dimensi BMN",
+      "Pemda"
+    ],
+    "beneficiaries": [
+      "Transmigran dan keluarga",
+      "Masyarakat kawasan transmigrasi",
+      "Instansi pemerintah yang memerlukan kepastian status objek",
+      "Pelaku usaha yang memerlukan spatial clearance sebelum keputusan"
+    ],
+    "innovationBoundary": {
+      "does": [
+        "memberi ID stabil pada objek/bidang tanah transmigrasi dalam prototype",
+        "menghubungkan status tanah, kawasan, tata ruang, konsesi/izin, BMN, administrasi wilayah, dan status layanan dari sumber berbeda",
+        "mendeteksi mismatch, overlap, status kedaluwarsa, dan evidence gap",
+        "menghasilkan risk flag yang transparan",
+        "mengurutkan prioritas berdasarkan risiko dan kedekatan milestone layanan",
+        "membuat case dengan reason, owner, next action, target review, dan audit trail",
+        "mendukung pre-clearance sebelum izin/kebijakan berbasis lokasi",
+        "mempertahankan histori perubahan status"
+      ],
+      "doesNot": [
+        "menetapkan hak atas tanah",
+        "menerbitkan atau membatalkan sertifikat",
+        "mengubah status kawasan hutan atau tata ruang",
+        "menerbitkan IUP/perizinan usaha",
+        "menggantikan sistem ATR/BPN, SIPUKAT, OSS, ESDM, KLHK, DJKN, atau Kemendagri",
+        "menganggap overlap geometrik sebagai bukti hukum final"
+      ]
+    }
+  },
+  "meta": {
+    "analysisDate": "2026-09-13",
+    "referenceCountry": "Indonesia",
+    "prototypePilot": "Parit Rambutan, Ogan Ilir, Sumatera Selatan",
+    "dataPolicy": "Setiap status harus mempunyai sumber, tanggal/vintage, otoritas, dan evidence class. Konflik antarsumber ditampilkan, bukan ditimpa.",
+    "privacyPolicy": "Prototype lomba tidak memuat nama/NIK/alamat real atau koordinat bidang sensitif riil.",
+    "dailyUseLogic": "Aplikasi aktif terus-menerus melalui event-driven risk monitoring, bukan hanya ketika ada pemekaran wilayah."
+  },
+  "evidenceClasses": [
+    {
+      "id": "OFFICIAL_CURRENT",
+      "label": "Observasi resmi mutakhir",
+      "definition": "Current official administrative/statistical/system information.",
+      "usableFor": "context, current counts, official status display",
+      "colorRole": "official"
+    },
+    {
+      "id": "OFFICIAL_SPATIAL",
+      "label": "Referensi spasial resmi",
+      "definition": "Authoritative/reference geospatial metadata or queryable layer.",
+      "usableFor": "spatial reference and change screening",
+      "colorRole": "spatial"
+    },
+    {
+      "id": "REGULATORY",
+      "label": "Regulasi",
+      "definition": "Law/regulation or official planning regulation.",
+      "usableFor": "authority and rule constraints",
+      "colorRole": "regulatory"
+    },
+    {
+      "id": "RESEARCH_OFFICIAL",
+      "label": "Temuan lapangan/riset resmi",
+      "definition": "Research or field-study evidence published by a government institution.",
+      "usableFor": "problem mechanisms and pilot requirements",
+      "colorRole": "research"
+    },
+    {
+      "id": "PRACTITIONER_INPUT",
+      "label": "Masukan praktisi",
+      "definition": "Operational statement from practitioner that still requires documentary or interview verification.",
+      "usableFor": "hypothesis generation only",
+      "colorRole": "practitioner"
+    },
+    {
+      "id": "DERIVED",
+      "label": "Turunan SINTAS",
+      "definition": "Calculated from cited official inputs.",
+      "usableFor": "summary/analytics with reproducible formula",
+      "colorRole": "derived"
+    },
+    {
+      "id": "SCENARIO",
+      "label": "Simulasi prototype",
+      "definition": "Synthetic data used only to demonstrate workflow and evaluation.",
+      "usableFor": "demo, scenario testing, prototype evaluation",
+      "colorRole": "scenario"
+    },
+    {
+      "id": "MISSING",
+      "label": "Belum tersedia",
+      "definition": "Required field has no verified source yet.",
+      "usableFor": "gap visibility only",
+      "colorRole": "missing"
+    }
+  ],
+  "provenancePolicy": {
+    "rules": [
+      "Every factual numeric datum must have source_ids and vintage/reference year when known.",
+      "Keep raw source labels and normalized candidates separately; never silently correct source text.",
+      "Do not compare metrics with different methods/vintages as if they were identical.",
+      "Null means unavailable or not verified; zero is a valid observed value only when explicitly sourced.",
+      "Scenario records must display a visible SIMULASI badge and may not be cited as real-world outcomes.",
+      "Spatial overlay is a screening signal; unresolved or legally sensitive cases require human verification.",
+      "Legal and administrative decisions remain with authorized institutions.",
+      "No household PII may be stored in the competition prototype."
+    ],
+    "conflictHandling": "Preserve both observations, show source/vintage/method, and create a data-quality flag instead of overwriting."
+  },
+  "sourceRegistry": [
+    {
+      "id": "SIPUKAT_HOME_2026",
+      "title": "SIPUKAT — Sistem Informasi Peta Terpadu Kawasan Transmigrasi",
+      "institution": "Kementerian Transmigrasi",
+      "year": 2026,
+      "url": "https://sipukat.transmigrasi.go.id/",
+      "document_type": "official_web_system",
+      "evidence_class": "OFFICIAL_CURRENT",
+      "supports": [
+        "154 kawasan transmigrasi",
+        "45 Kawasan Pronas",
+        "status dan IPKT display per kawasan",
+        "fungsi SIPUKAT dan katalog data spasial/atribut"
+      ],
+      "limitations": "Current web display; some raw geographic labels contain apparent inconsistencies and must not be silently corrected.",
+      "accessed_at": "2026-09-13"
+    },
+    {
+      "id": "SIPUKAT_PARIT_2026",
+      "title": "Parit Rambutan — Kawasan Transmigrasi KT-033",
+      "institution": "Kementerian Transmigrasi / BPPMT Pekanbaru",
+      "year": 2026,
+      "url": "https://www.transmigrasi.go.id/bppmtpekanbaru/zona/parit-rambutan-kt-033",
+      "document_type": "official_area_profile",
+      "evidence_class": "OFFICIAL_CURRENT",
+      "supports": [
+        "19,281.76 ha",
+        "49,264 population",
+        "IPKT 50.12 (2023)",
+        "16 villages",
+        "3,317 SHM issued / 1,133 not yet",
+        "village-status composition",
+        "social/economic/service context"
+      ],
+      "limitations": "Area profile is contextual; not a legal boundary dataset. Product-output figures should be revalidated before use outside context.",
+      "accessed_at": "2026-09-13"
+    },
+    {
+      "id": "BIG_DESAKEL_2026",
+      "title": "BATAS_DESAKEL_AR — Edisi Juni 2026",
+      "institution": "Badan Informasi Geospasial",
+      "year": 2026,
+      "url": "https://data.go.id/dataset/dataset/batas_desakel_ar1",
+      "document_type": "official_spatial_dataset_metadata",
+      "evidence_class": "OFFICIAL_SPATIAL",
+      "supports": [
+        "administrative village/kelurahan boundary vintage June 2026",
+        "source and update methodology",
+        "known boundary-data caveats"
+      ],
+      "limitations": "Contains a mix of definitive and indicative boundaries; some split villages may lack geometry/codes; indicative boundaries may contain overlapping claims.",
+      "accessed_at": "2026-09-13"
+    },
+    {
+      "id": "BIG_DESAKEL_ARCGIS",
+      "title": "Area Batas Wilayah Administrasi Desa/Kelurahan",
+      "institution": "Badan Informasi Geospasial",
+      "year": 2026,
+      "url": "https://geoservices.big.go.id/rbi/rest/services/BATASWILAYAH/BATAS_DESAKEL_AR/MapServer/0",
+      "document_type": "official_arcgis_layer",
+      "evidence_class": "OFFICIAL_SPATIAL",
+      "supports": [
+        "queryable polygon layer",
+        "GeoJSON support",
+        "PUM/BPS codes",
+        "village/subdistrict/regency/province fields",
+        "status/reference fields"
+      ],
+      "limitations": "Geometry is reference data; SINTAS must not treat spatial overlay alone as a legal determination.",
+      "accessed_at": "2026-09-13"
+    },
+    {
+      "id": "BIG_KECAMATAN_ARCGIS",
+      "title": "Area Batas Wilayah Administrasi Kecamatan — Edisi Juni 2026",
+      "institution": "Badan Informasi Geospasial",
+      "year": 2026,
+      "url": "https://geoservices.big.go.id/rbi/rest/services/BATASWILAYAH/BATAS_KECAMATAN_AR/MapServer/0",
+      "document_type": "official_arcgis_layer",
+      "evidence_class": "OFFICIAL_SPATIAL",
+      "supports": [
+        "queryable subdistrict geometry",
+        "national spatial reference EPSG:4326"
+      ],
+      "limitations": "Use as reference layer, not legal-decision engine.",
+      "accessed_at": "2026-09-13"
+    },
+    {
+      "id": "PP19_2024",
+      "title": "PP Nomor 19 Tahun 2024 tentang Pelaksanaan Ketransmigrasian",
+      "institution": "Pemerintah Republik Indonesia",
+      "year": 2024,
+      "url": "https://peraturan.bpk.go.id/Details/283615/pp-no-19-tahun-2024",
+      "document_type": "regulation",
+      "evidence_class": "REGULATORY",
+      "supports": [
+        "central/provincial/regency responsibility by cross-jurisdiction scope",
+        "coordination and supervision framework"
+      ],
+      "limitations": "Read together with PP 37/2025 as amendment.",
+      "accessed_at": "2026-09-13"
+    },
+    {
+      "id": "PP37_2025",
+      "title": "PP Nomor 37 Tahun 2025 — Perubahan atas PP 19/2024",
+      "institution": "Pemerintah Republik Indonesia",
+      "year": 2025,
+      "url": "https://peraturan.bpk.go.id/Details/331095/pp-no-37-tahun-2025",
+      "document_type": "regulation",
+      "evidence_class": "REGULATORY",
+      "supports": [
+        "transmigration transformation amendments",
+        "SHM responsibility and five-year maximum from placement",
+        "local-government role in development of SP/SKP"
+      ],
+      "limitations": "Legal text governs authority; SINTAS only routes/flags and does not decide legal status.",
+      "accessed_at": "2026-09-13"
+    },
+    {
+      "id": "PERMENTRANS2_2024",
+      "title": "Permentrans Nomor 2 Tahun 2024 — Penataan Persebaran Penduduk di Kawasan Transmigrasi",
+      "institution": "Kementerian Transmigrasi",
+      "year": 2024,
+      "url": "https://jdih.transmigrasi.go.id/web/regulations/read/814",
+      "document_type": "regulation",
+      "evidence_class": "REGULATORY",
+      "supports": [
+        "determination as transmigrant valid at most five years since placement in SP"
+      ],
+      "limitations": "Do not translate this administrative status into benefits/rights not explicitly supported by the regulation.",
+      "accessed_at": "2026-09-13"
+    },
+    {
+      "id": "PERMENTRANS8_2025",
+      "title": "Permentrans Nomor 8 Tahun 2025 tentang Transformasi Transmigrasi",
+      "institution": "Kementerian Transmigrasi",
+      "year": 2025,
+      "url": "https://jdih.transmigrasi.go.id/web/regulations/read/825",
+      "document_type": "regulation",
+      "evidence_class": "REGULATORY",
+      "supports": [
+        "five flagship transformation programs",
+        "land-right certainty",
+        "multisector collaboration considering government administration and risk"
+      ],
+      "limitations": "Amended by Permentrans 13/2025; use current consolidated reading for production rules.",
+      "accessed_at": "2026-09-13"
+    },
+    {
+      "id": "PERMENTRANS13_2025",
+      "title": "Permentrans Nomor 13 Tahun 2025 — Perubahan atas Permentrans 8/2025",
+      "institution": "Kementerian Transmigrasi",
+      "year": 2025,
+      "url": "https://jdih.transmigrasi.go.id/web/regulations/read/899",
+      "document_type": "regulation",
+      "evidence_class": "REGULATORY",
+      "supports": [
+        "current amendment status of transformation framework"
+      ],
+      "limitations": "Does not by itself establish SINTAS workflow rules.",
+      "accessed_at": "2026-09-13"
+    },
+    {
+      "id": "PERMENTRANS9_2025",
+      "title": "Permentrans Nomor 9 Tahun 2025 — Kriteria dan Tata Cara Penetapan Kawasan Transmigrasi",
+      "institution": "Kementerian Transmigrasi",
+      "year": 2025,
+      "url": "https://jdih.transmigrasi.go.id/web/regulations/read/828",
+      "document_type": "regulation",
+      "evidence_class": "REGULATORY",
+      "supports": [
+        "RKT boundary may use village/subdistrict/regency boundaries",
+        "administrative analysis includes names/codes and boundaries",
+        "SKP can comprise several villages or parts of villages"
+      ],
+      "limitations": "Planning/delineation rules do not mean every later administrative boundary change automatically changes the transmigration-area legal boundary.",
+      "accessed_at": "2026-09-13"
+    },
+    {
+      "id": "LAKIN_FP3KT_2025",
+      "title": "Laporan Kinerja Direktorat Fasilitasi Penataan Persebaran Penduduk di Kawasan Transmigrasi 2025",
+      "institution": "Kementerian Transmigrasi",
+      "year": 2026,
+      "url": "https://www.transmigrasi.go.id/wp-content/uploads/2026/05/LAPKIN-FP3KT-2025-TTD-pernyataan.pdf",
+      "document_type": "official_performance_report",
+      "evidence_class": "OFFICIAL_CURRENT",
+      "supports": [
+        "Sibarduktrans benefits",
+        "WhatsApp/Zoom coordination",
+        "regional producer data not always timely",
+        "limited HR slows data/information exchange"
+      ],
+      "limitations": "Evidence describes directorate-wide operational constraints; it does not prove every delay is caused by boundary change.",
+      "accessed_at": "2026-09-13"
+    },
+    {
+      "id": "LAKIN_PPKTRANS_2025",
+      "title": "Laporan Kinerja Ditjen PPKTrans 2025",
+      "institution": "Kementerian Transmigrasi",
+      "year": 2026,
+      "url": "https://www.transmigrasi.go.id/wp-content/uploads/2026/05/Laporan-Kinerja-Ditjen-PPKTrans-2025.pdf",
+      "document_type": "official_performance_report",
+      "evidence_class": "OFFICIAL_CURRENT",
+      "supports": [
+        "only 15 of 45 national-priority areas directly observed for INTRANS in 2025 due available budget",
+        "Parit Rambutan INTRANS 0.52 and status Berkembang in that assessment"
+      ],
+      "limitations": "INTRANS observation and SIPUKAT IPKT/status are different metric/vintage contexts; do not treat display differences as an error before methodological reconciliation.",
+      "accessed_at": "2026-09-13"
+    },
+    {
+      "id": "SDI_DESA_45",
+      "title": "Data Prioritas RPJMN 2025–2029 — Desa Maju/Mandiri di 45 Kawasan Transmigrasi",
+      "institution": "Sekretariat Satu Data Indonesia / Bappenas",
+      "year": 2026,
+      "url": "https://perencanaan.data.go.id/renduk?page=65&per-page=50",
+      "document_type": "official_data_planning_registry",
+      "evidence_class": "OFFICIAL_CURRENT",
+      "supports": [
+        "annual variable: total villages in 45 areas",
+        "annual variable: advanced/independent villages in 45 areas",
+        "producer: Kementerian Transmigrasi"
+      ],
+      "limitations": "Registry defines data need; current values must come from the authoritative producer/version.",
+      "accessed_at": "2026-09-13"
+    },
+    {
+      "id": "SDI_POP_45_BPS",
+      "title": "Data Prioritas RPJMN 2025–2029 — Jumlah Penduduk di 45 Kawasan Transmigrasi",
+      "institution": "Sekretariat Satu Data Indonesia / Bappenas",
+      "year": 2026,
+      "url": "https://perencanaan.data.go.id/renduk?page=145&per-page=10",
+      "document_type": "official_data_planning_registry",
+      "evidence_class": "OFFICIAL_CURRENT",
+      "supports": [
+        "annual population variable for 45 areas",
+        "producer: BPS Directorate of Population and Employment Statistics"
+      ],
+      "limitations": "Registry states availability/producer, not a household-level administrative register.",
+      "accessed_at": "2026-09-13"
+    },
+    {
+      "id": "SDI_INTRANS_45",
+      "title": "Data Prioritas RPJMN 2025–2029 — Nilai Rata-rata Indeks Transformasi 45 Kawasan Transmigrasi",
+      "institution": "Sekretariat Satu Data Indonesia / Bappenas",
+      "year": 2026,
+      "url": "https://perencanaan.data.go.id/renduk?page=268&per-page=10",
+      "document_type": "official_data_planning_registry",
+      "evidence_class": "OFFICIAL_CURRENT",
+      "supports": [
+        "annual national indicator",
+        "producer: Kementerian Transmigrasi",
+        "uses multidomain local-government/OPD data"
+      ],
+      "limitations": "Dashboard must keep source year and method explicit.",
+      "accessed_at": "2026-09-13"
+    },
+    {
+      "id": "PERMEN_PPN3_2025",
+      "title": "Permen PPN/Bappenas Nomor 3 Tahun 2025 — planning indicator values",
+      "institution": "Kementerian PPN/Bappenas",
+      "year": 2025,
+      "url": "https://peraturan.go.id/files/permen-ppn-bappenas-no-3-tahun-2025.pdf",
+      "document_type": "regulation_planning",
+      "evidence_class": "REGULATORY",
+      "supports": [
+        "2024 realization/outlook/2026 planning values for core transmigration indicators"
+      ],
+      "limitations": "Some 2026 targets are revised in later planning documents; keep versions separate.",
+      "accessed_at": "2026-09-13"
+    },
+    {
+      "id": "PERPRES117_2025",
+      "title": "Lampiran Perpres Nomor 117 Tahun 2025 — Target 2026",
+      "institution": "Pemerintah Republik Indonesia",
+      "year": 2025,
+      "url": "https://peraturan.bpk.go.id/Download/406771/2.%20Lampiran%20I%20Perpres%20Nomor%20117%20Tahun%202025.pdf",
+      "document_type": "regulation_planning",
+      "evidence_class": "REGULATORY",
+      "supports": [
+        "2026 target: Desa Maju/Mandiri in 45 areas 65.11%",
+        "INTRANS 0.475",
+        "income growth 1.2%",
+        "support activities 45%"
+      ],
+      "limitations": "Use as a later planning target version; preserve earlier target versions for audit.",
+      "accessed_at": "2026-09-13"
+    },
+    {
+      "id": "KEMDIKTISAINTEK_PARIT_2026",
+      "title": "Mengurai Benang Kusut Lahan Transmigrasi di Parit Rambutan",
+      "institution": "Kementerian Pendidikan Tinggi, Sains, dan Teknologi / UNDIP TEP",
+      "year": 2026,
+      "url": "https://kemdiktisaintek.go.id/en/news/article/mengurai-benang-kusut-lahan-transmigrasi-tep-undip-petakan-legalitas-dan-tata-ruang-pertanahan-di-parit-rambutan",
+      "document_type": "official_field_research_news",
+      "evidence_class": "RESEARCH_OFFICIAL",
+      "supports": [
+        "documents are distributed across agencies",
+        "historical boundary shifts and land-control changes",
+        "by-name-by-parcel reconciliation",
+        "field validation with residents"
+      ],
+      "limitations": "Field work concerns Parit Rambutan land administration; it supports pilot design, not a national causal generalization.",
+      "accessed_at": "2026-09-13"
+    },
+    {
+      "id": "OGANILIR_SHM_2026",
+      "title": "Pemkab Ogan Ilir Dorong Percepatan SHM Transmigran SP2 Parit Rambutan",
+      "institution": "Pemerintah Kabupaten Ogan Ilir",
+      "year": 2026,
+      "url": "https://penyandingan.oganilirkab.go.id/berita-oi/pemkab-oi-audiensi-ke-kanwil-bpn-sumsel-dorong-percepatan-sertifikat-hak-milik-transmigran-sp2-ktp-parit-rambutan",
+      "document_type": "official_local_government_news",
+      "evidence_class": "OFFICIAL_CURRENT",
+      "supports": [
+        "April 2026 coordination with BPN South Sumatra for long-awaited SHM certainty at SP2 Parit Rambutan"
+      ],
+      "limitations": "Does not establish that administrative boundary change caused the delay.",
+      "accessed_at": "2026-09-13"
+    },
+    {
+      "id": "TRANS_TUNTAS_2025",
+      "title": "Trans Tuntas — national land overlap and uncertified parcels",
+      "institution": "Kementerian Transmigrasi",
+      "year": 2025,
+      "url": "https://www.transmigrasi.go.id/ditjenpemt/trans-tuntas-jadi-solusi-kementerian-transmigrasi-bereskan-tumpang-tindih-lahan-transmigrasi-dan-kawasan-hutan/",
+      "document_type": "official_news",
+      "evidence_class": "OFFICIAL_CURRENT",
+      "supports": [
+        "3.1 million ha historical HPL context",
+        "129,553 uncertified parcels",
+        "17,655 parcels / 13.63% in forest area"
+      ],
+      "limitations": "National stock figure is dated to 2025 context and should not be presented as current 2026 stock without update.",
+      "accessed_at": "2026-09-13"
+    },
+    {
+      "id": "TRANS_TUNTAS_2026",
+      "title": "Program Prioritas Kementerian Transmigrasi 2026",
+      "institution": "Kementerian Transmigrasi",
+      "year": 2026,
+      "url": "https://www.transmigrasi.go.id/program-prioritas-kementerian-transmigrasi-2026-fokus-tuntaskan-lahan-transmigran-dan-perkuat-sdm-unggul-di-kawasan/",
+      "document_type": "official_news",
+      "evidence_class": "OFFICIAL_CURRENT",
+      "supports": [
+        "2026 target 11,288 SHM in 61 locations",
+        "HPL inventory 50 locations, 13 provinces, 217,043.26 ha"
+      ],
+      "limitations": "Targets are not realized outcomes.",
+      "accessed_at": "2026-09-13"
+    },
+    {
+      "id": "TEP_2026",
+      "title": "Tim Ekspedisi Patriot 2026 — 53 kawasan",
+      "institution": "Kementerian Transmigrasi",
+      "year": 2026,
+      "url": "https://www.transmigrasi.go.id/mentrans-iftitah-patriot-muda-harus-jadi-problem-solver-solusi-untuk-indonesia-dimulai-dari-kawasan-transmigrasi/",
+      "document_type": "official_news",
+      "evidence_class": "OFFICIAL_CURRENT",
+      "supports": [
+        "1,476 participants",
+        "246 teams",
+        "53 areas in TEP 2026"
+      ],
+      "limitations": "TEP footprint differs from the 45 RPJMN priority-area indicator universe.",
+      "accessed_at": "2026-09-13"
+    }
+  ],
+  "nationalContext": {
+    "coreFacts": [
+      {
+        "id": "CTX-001",
+        "label": "Kawasan transmigrasi pada tampilan SIPUKAT",
+        "value": 154,
+        "unit": "kawasan",
+        "evidenceClass": "OFFICIAL_CURRENT",
+        "sourceIds": [
+          "SIPUKAT_HOME_2026"
+        ]
+      },
+      {
+        "id": "CTX-002",
+        "label": "Kawasan Pronas pada tampilan SIPUKAT",
+        "value": 45,
+        "unit": "kawasan",
+        "evidenceClass": "OFFICIAL_CURRENT",
+        "sourceIds": [
+          "SIPUKAT_HOME_2026"
+        ]
+      },
+      {
+        "id": "CTX-003",
+        "label": "Kawasan TEP 2026",
+        "value": 53,
+        "unit": "kawasan",
+        "evidenceClass": "OFFICIAL_CURRENT",
+        "sourceIds": [
+          "TEP_2026"
+        ]
+      },
+      {
+        "id": "CTX-004",
+        "label": "Target SHM Trans Tuntas 2026",
+        "value": 11288,
+        "unit": "bidang",
+        "evidenceClass": "OFFICIAL_CURRENT",
+        "sourceIds": [
+          "TRANS_TUNTAS_2026"
+        ],
+        "valueType": "target"
+      },
+      {
+        "id": "CTX-005",
+        "label": "Lokasi target SHM 2026",
+        "value": 61,
+        "unit": "lokasi",
+        "evidenceClass": "OFFICIAL_CURRENT",
+        "sourceIds": [
+          "TRANS_TUNTAS_2026"
+        ],
+        "valueType": "target"
+      },
+      {
+        "id": "CTX-006",
+        "label": "Inventarisasi HPL 2026",
+        "value": 217043.26,
+        "unit": "hektare",
+        "evidenceClass": "OFFICIAL_CURRENT",
+        "sourceIds": [
+          "TRANS_TUNTAS_2026"
+        ],
+        "valueType": "target_scope"
+      },
+      {
+        "id": "CTX-007",
+        "label": "Lokasi inventarisasi HPL 2026",
+        "value": 50,
+        "unit": "lokasi",
+        "evidenceClass": "OFFICIAL_CURRENT",
+        "sourceIds": [
+          "TRANS_TUNTAS_2026"
+        ],
+        "valueType": "target_scope"
+      },
+      {
+        "id": "CTX-008",
+        "label": "Provinsi inventarisasi HPL 2026",
+        "value": 13,
+        "unit": "provinsi",
+        "evidenceClass": "OFFICIAL_CURRENT",
+        "sourceIds": [
+          "TRANS_TUNTAS_2026"
+        ],
+        "valueType": "target_scope"
+      },
+      {
+        "id": "CTX-009",
+        "label": "Bidang belum bersertifikat (konteks 2025)",
+        "value": 129553,
+        "unit": "bidang",
+        "evidenceClass": "OFFICIAL_CURRENT",
+        "sourceIds": [
+          "TRANS_TUNTAS_2025"
+        ],
+        "referenceYear": 2025
+      },
+      {
+        "id": "CTX-010",
+        "label": "Bidang belum bersertifikat dalam kawasan hutan (konteks 2025)",
+        "value": 17655,
+        "unit": "bidang",
+        "evidenceClass": "OFFICIAL_CURRENT",
+        "sourceIds": [
+          "TRANS_TUNTAS_2025"
+        ],
+        "referenceYear": 2025
+      },
+      {
+        "id": "CTX-011",
+        "label": "Proporsi bidang belum bersertifikat di kawasan hutan (konteks 2025)",
+        "value": 13.63,
+        "unit": "persen",
+        "evidenceClass": "OFFICIAL_CURRENT",
+        "sourceIds": [
+          "TRANS_TUNTAS_2025"
+        ],
+        "referenceYear": 2025
+      }
+    ],
+    "pronasPortfolioSummary": {
+      "count": 45,
+      "statusCounts": {
+        "Mandiri": 20,
+        "Berdaya Saing": 3,
+        "Berkembang": 22
+      },
+      "ipktDisplayMean": 54.8,
+      "ipktDisplayMedian": 53.17,
+      "ipktDisplayMin": {
+        "value": 19.37,
+        "area": "Sagea Waleh"
+      },
+      "ipktDisplayMax": {
+        "value": 84.93,
+        "area": "Lunang Silaut"
+      },
+      "evidenceClass": "DERIVED",
+      "derivedFrom": [
+        "SIPUKAT_HOME_2026"
+      ],
+      "guardrail": "IPKT display values are used descriptively; do not infer causal performance."
+    },
+    "priorityAreas": [
+      {
+        "id": "KT-PRONAS-01",
+        "rank_source": 1,
+        "name_raw": "SELAUT",
+        "name": "Selaut",
+        "regency_raw": "SIMEULEU",
+        "regency": "Simeuleu",
+        "province_raw": "ACEH",
+        "province": "Aceh",
+        "status_raw": "MANDIRI",
+        "status": "Mandiri",
+        "ipkt_display": 66.78,
+        "ipkt_reference_year": null,
+        "evidence_class": "OFFICIAL_CURRENT",
+        "source_ids": [
+          "SIPUKAT_HOME_2026"
+        ],
+        "qa_flags": []
+      },
+      {
+        "id": "KT-PRONAS-02",
+        "rank_source": 2,
+        "name_raw": "BATU BETUMPANG",
+        "name": "Batu Betumpang",
+        "regency_raw": "BANGKA SELATAN",
+        "regency": "Bangka Selatan",
+        "province_raw": "BANGKA BELITUNG",
+        "province": "Bangka Belitung",
+        "status_raw": "MANDIRI",
+        "status": "Mandiri",
+        "ipkt_display": 81.36,
+        "ipkt_reference_year": null,
+        "evidence_class": "OFFICIAL_CURRENT",
+        "source_ids": [
+          "SIPUKAT_HOME_2026"
+        ],
+        "qa_flags": []
+      },
+      {
+        "id": "KT-PRONAS-03",
+        "rank_source": 3,
+        "name_raw": "LUNANG SILAUT",
+        "name": "Lunang Silaut",
+        "regency_raw": "PESISIR SELATAN",
+        "regency": "Pesisir Selatan",
+        "province_raw": "SUMATERA BARAT",
+        "province": "Sumatera Barat",
+        "status_raw": "BERDAYA SAING",
+        "status": "Berdaya Saing",
+        "ipkt_display": 84.93,
+        "ipkt_reference_year": null,
+        "evidence_class": "OFFICIAL_CURRENT",
+        "source_ids": [
+          "SIPUKAT_HOME_2026"
+        ],
+        "qa_flags": []
+      },
+      {
+        "id": "KT-PRONAS-04",
+        "rank_source": 4,
+        "name_raw": "MUARA TAKUNG - KAMANG BARU",
+        "name": "Muara Takung - Kamang Baru",
+        "regency_raw": "SIJUNJUNG",
+        "regency": "Sijunjung",
+        "province_raw": "SUMATERA BARAT",
+        "province": "Sumatera Barat",
+        "status_raw": "BERKEMBANG",
+        "status": "Berkembang",
+        "ipkt_display": 43.8,
+        "ipkt_reference_year": null,
+        "evidence_class": "OFFICIAL_CURRENT",
+        "source_ids": [
+          "SIPUKAT_HOME_2026"
+        ],
+        "qa_flags": []
+      },
+      {
+        "id": "KT-PRONAS-05",
+        "rank_source": 5,
+        "name_raw": "PARIT RAMBUTAN",
+        "name": "Parit Rambutan",
+        "regency_raw": "OGAN ILIR",
+        "regency": "Ogan Ilir",
+        "province_raw": "SUMATERA SELATAN",
+        "province": "Sumatera Selatan",
+        "status_raw": "MANDIRI",
+        "status": "Mandiri",
+        "ipkt_display": 50.12,
+        "ipkt_reference_year": 2023,
+        "evidence_class": "OFFICIAL_CURRENT",
+        "source_ids": [
+          "SIPUKAT_HOME_2026"
+        ],
+        "qa_flags": [],
+        "map_anchor": {
+          "lat": -3.1216497213575,
+          "lon": 104.6166668321,
+          "type": "SIPUKAT_navigation_anchor",
+          "legal_boundary": false
+        }
+      },
+      {
+        "id": "KT-PRONAS-06",
+        "rank_source": 6,
+        "name_raw": "TELANG",
+        "name": "Telang",
+        "regency_raw": "BANYUASIN",
+        "regency": "Banyuasin",
+        "province_raw": "SUMATERA SELATAN",
+        "province": "Sumatera Selatan",
+        "status_raw": "MANDIRI",
+        "status": "Mandiri",
+        "ipkt_display": 78.67,
+        "ipkt_reference_year": null,
+        "evidence_class": "OFFICIAL_CURRENT",
+        "source_ids": [
+          "SIPUKAT_HOME_2026"
+        ],
+        "qa_flags": []
+      },
+      {
+        "id": "KT-PRONAS-07",
+        "rank_source": 7,
+        "name_raw": "KIKIM",
+        "name": "Kikim",
+        "regency_raw": "LAHAT",
+        "regency": "Lahat",
+        "province_raw": "SUMATERA SELATAN",
+        "province": "Sumatera Selatan",
+        "status_raw": "MANDIRI",
+        "status": "Mandiri",
+        "ipkt_display": 54.25,
+        "ipkt_reference_year": null,
+        "evidence_class": "OFFICIAL_CURRENT",
+        "source_ids": [
+          "SIPUKAT_HOME_2026"
+        ],
+        "qa_flags": []
+      },
+      {
+        "id": "KT-PRONAS-08",
+        "rank_source": 8,
+        "name_raw": "PETATA",
+        "name": "Petata",
+        "regency_raw": "PALI",
+        "regency": "Pali",
+        "province_raw": "SUMATERA SELATAN",
+        "province": "Sumatera Selatan",
+        "status_raw": "BERKEMBANG",
+        "status": "Berkembang",
+        "ipkt_display": 46.13,
+        "ipkt_reference_year": null,
+        "evidence_class": "OFFICIAL_CURRENT",
+        "source_ids": [
+          "SIPUKAT_HOME_2026"
+        ],
+        "qa_flags": []
+      },
+      {
+        "id": "KT-PRONAS-09",
+        "rank_source": 9,
+        "name_raw": "LAGITA",
+        "name": "Lagita",
+        "regency_raw": "BENGKULU UTARA",
+        "regency": "Bengkulu Utara",
+        "province_raw": "BENGKULU",
+        "province": "Bengkulu",
+        "status_raw": "BERDAYA SAING",
+        "status": "Berdaya Saing",
+        "ipkt_display": 80.47,
+        "ipkt_reference_year": null,
+        "evidence_class": "OFFICIAL_CURRENT",
+        "source_ids": [
+          "SIPUKAT_HOME_2026"
+        ],
+        "qa_flags": []
+      },
+      {
+        "id": "KT-PRONAS-10",
+        "rank_source": 10,
+        "name_raw": "SALIM BATU",
+        "name": "Salim Batu",
+        "regency_raw": "BULUNGAN",
+        "regency": "Bulungan",
+        "province_raw": "KALIMANTAN UTARA",
+        "province": "Kalimantan Utara",
+        "status_raw": "MANDIRI",
+        "status": "Mandiri",
+        "ipkt_display": 53.49,
+        "ipkt_reference_year": null,
+        "evidence_class": "OFFICIAL_CURRENT",
+        "source_ids": [
+          "SIPUKAT_HOME_2026"
+        ],
+        "qa_flags": []
+      },
+      {
+        "id": "KT-PRONAS-11",
+        "rank_source": 11,
+        "name_raw": "RASAU JAYA",
+        "name": "Rasau Jaya",
+        "regency_raw": "KUBU RAYA",
+        "regency": "Kubu Raya",
+        "province_raw": "KALIMANTAN BARAT",
+        "province": "Kalimantan Barat",
+        "status_raw": "BERDAYA SAING",
+        "status": "Berdaya Saing",
+        "ipkt_display": 82.86,
+        "ipkt_reference_year": null,
+        "evidence_class": "OFFICIAL_CURRENT",
+        "source_ids": [
+          "SIPUKAT_HOME_2026"
+        ],
+        "qa_flags": []
+      },
+      {
+        "id": "KT-PRONAS-12",
+        "rank_source": 12,
+        "name_raw": "GERBANG MASPERKASA",
+        "name": "Gerbang Masperkasa",
+        "regency_raw": "SAMBAS",
+        "regency": "Sambas",
+        "province_raw": "KALIMANTAN BARAT",
+        "province": "Kalimantan Barat",
+        "status_raw": "MANDIRI",
+        "status": "Mandiri",
+        "ipkt_display": 63.76,
+        "ipkt_reference_year": null,
+        "evidence_class": "OFFICIAL_CURRENT",
+        "source_ids": [
+          "SIPUKAT_HOME_2026"
+        ],
+        "qa_flags": []
+      },
+      {
+        "id": "KT-PRONAS-13",
+        "rank_source": 13,
+        "name_raw": "SEKAYAM - ENTIKONG",
+        "name": "Sekayam - Entikong",
+        "regency_raw": "SANGGAU",
+        "regency": "Sanggau",
+        "province_raw": "KALIMANTAN BARAT",
+        "province": "Kalimantan Barat",
+        "status_raw": "BERKEMBANG",
+        "status": "Berkembang",
+        "ipkt_display": 43.41,
+        "ipkt_reference_year": null,
+        "evidence_class": "OFFICIAL_CURRENT",
+        "source_ids": [
+          "SIPUKAT_HOME_2026"
+        ],
+        "qa_flags": []
+      },
+      {
+        "id": "KT-PRONAS-14",
+        "rank_source": 14,
+        "name_raw": "KETUNGAU HULU",
+        "name": "Ketungau Hulu",
+        "regency_raw": "SINTANG",
+        "regency": "Sintang",
+        "province_raw": "KALIMANTAN BARAT",
+        "province": "Kalimantan Barat",
+        "status_raw": "BERKEMBANG",
+        "status": "Berkembang",
+        "ipkt_display": 36.29,
+        "ipkt_reference_year": null,
+        "evidence_class": "OFFICIAL_CURRENT",
+        "source_ids": [
+          "SIPUKAT_HOME_2026"
+        ],
+        "qa_flags": []
+      },
+      {
+        "id": "KT-PRONAS-15",
+        "rank_source": 15,
+        "name_raw": "LAMUNTI - DADAHUP",
+        "name": "Lamunti - Dadahup",
+        "regency_raw": "KAPUAS",
+        "regency": "Kapuas",
+        "province_raw": "KALIMANTAN TENGAH",
+        "province": "Kalimantan Tengah",
+        "status_raw": "MANDIRI",
+        "status": "Mandiri",
+        "ipkt_display": 55.97,
+        "ipkt_reference_year": null,
+        "evidence_class": "OFFICIAL_CURRENT",
+        "source_ids": [
+          "SIPUKAT_HOME_2026"
+        ],
+        "qa_flags": []
+      },
+      {
+        "id": "KT-PRONAS-16",
+        "rank_source": 16,
+        "name_raw": "JELAI (PULAU NIBUNG)",
+        "name": "Jelai (Pulau Nibung)",
+        "regency_raw": "SUKAMARA",
+        "regency": "Sukamara",
+        "province_raw": "KALIMANTAN TENGAH",
+        "province": "Kalimantan Tengah",
+        "status_raw": "BERKEMBANG",
+        "status": "Berkembang",
+        "ipkt_display": 43.27,
+        "ipkt_reference_year": null,
+        "evidence_class": "OFFICIAL_CURRENT",
+        "source_ids": [
+          "SIPUKAT_HOME_2026"
+        ],
+        "qa_flags": []
+      },
+      {
+        "id": "KT-PRONAS-17",
+        "rank_source": 17,
+        "name_raw": "ARSEL KOLAM",
+        "name": "Arsel Kolam",
+        "regency_raw": "KOTAWARINGIN BARAT",
+        "regency": "Kotawaringin Barat",
+        "province_raw": "KALIMANTAN TENGAH",
+        "province": "Kalimantan Tengah",
+        "status_raw": "MANDIRI",
+        "status": "Mandiri",
+        "ipkt_display": 61.66,
+        "ipkt_reference_year": null,
+        "evidence_class": "OFFICIAL_CURRENT",
+        "source_ids": [
+          "SIPUKAT_HOME_2026"
+        ],
+        "qa_flags": []
+      },
+      {
+        "id": "KT-PRONAS-18",
+        "rank_source": 18,
+        "name_raw": "KERANG",
+        "name": "Kerang",
+        "regency_raw": "PASER",
+        "regency": "Paser",
+        "province_raw": "KALIMANTAN TIMUR",
+        "province": "Kalimantan Timur",
+        "status_raw": "BERKEMBANG",
+        "status": "Berkembang",
+        "ipkt_display": 47.93,
+        "ipkt_reference_year": null,
+        "evidence_class": "OFFICIAL_CURRENT",
+        "source_ids": [
+          "SIPUKAT_HOME_2026"
+        ],
+        "qa_flags": []
+      },
+      {
+        "id": "KT-PRONAS-19",
+        "rank_source": 19,
+        "name_raw": "CAHAYA BARU",
+        "name": "Cahaya Baru",
+        "regency_raw": "BARITO KUALA",
+        "regency": "Barito Kuala",
+        "province_raw": "KALIMANTAN SELATAN",
+        "province": "Kalimantan Selatan",
+        "status_raw": "MANDIRI",
+        "status": "Mandiri",
+        "ipkt_display": 79.29,
+        "ipkt_reference_year": null,
+        "evidence_class": "OFFICIAL_CURRENT",
+        "source_ids": [
+          "SIPUKAT_HOME_2026"
+        ],
+        "qa_flags": []
+      },
+      {
+        "id": "KT-PRONAS-20",
+        "rank_source": 20,
+        "name_raw": "SELAPARANG",
+        "name": "Selaparang",
+        "regency_raw": "LOMBOK TIMUR",
+        "regency": "Lombok Timur",
+        "province_raw": "NUSA TENGGARA BARAT",
+        "province": "Nusa Tenggara Barat",
+        "status_raw": "BERKEMBANG",
+        "status": "Berkembang",
+        "ipkt_display": 47.26,
+        "ipkt_reference_year": null,
+        "evidence_class": "OFFICIAL_CURRENT",
+        "source_ids": [
+          "SIPUKAT_HOME_2026"
+        ],
+        "qa_flags": []
+      },
+      {
+        "id": "KT-PRONAS-21",
+        "rank_source": 21,
+        "name_raw": "KOBALIMA TIMUR",
+        "name": "Kobalima Timur",
+        "regency_raw": "MALAKA",
+        "regency": "Malaka",
+        "province_raw": "NUSA TENGGARA TIMUR",
+        "province": "Nusa Tenggara Timur",
+        "status_raw": "MANDIRI",
+        "status": "Mandiri",
+        "ipkt_display": 52.14,
+        "ipkt_reference_year": null,
+        "evidence_class": "OFFICIAL_CURRENT",
+        "source_ids": [
+          "SIPUKAT_HOME_2026"
+        ],
+        "qa_flags": []
+      },
+      {
+        "id": "KT-PRONAS-22",
+        "rank_source": 22,
+        "name_raw": "PONU",
+        "name": "Ponu",
+        "regency_raw": "TIMOR TENGAH UATAR",
+        "regency": "Timor Tengah Uatar",
+        "province_raw": "NUSA TENGGARA TIMUR",
+        "province": "Nusa Tenggara Timur",
+        "status_raw": "BERKEMBANG",
+        "status": "Berkembang",
+        "ipkt_display": 51.05,
+        "ipkt_reference_year": null,
+        "evidence_class": "OFFICIAL_CURRENT",
+        "source_ids": [
+          "SIPUKAT_HOME_2026"
+        ],
+        "qa_flags": [
+          "SOURCE_TYPO_SUSPECTED"
+        ],
+        "regency_normalized_candidate": "Timor Tengah Utara",
+        "normalization_status": "requires_authoritative_confirmation"
+      },
+      {
+        "id": "KT-PRONAS-23",
+        "rank_source": 23,
+        "name_raw": "TASIFETO-MANDEU",
+        "name": "Tasifeto-Mandeu",
+        "regency_raw": "BELU",
+        "regency": "Belu",
+        "province_raw": "NUSA TENGGARA TIMUR",
+        "province": "Nusa Tenggara Timur",
+        "status_raw": "BERKEMBANG",
+        "status": "Berkembang",
+        "ipkt_display": 41.36,
+        "ipkt_reference_year": null,
+        "evidence_class": "OFFICIAL_CURRENT",
+        "source_ids": [
+          "SIPUKAT_HOME_2026"
+        ],
+        "qa_flags": []
+      },
+      {
+        "id": "KT-PRONAS-24",
+        "rank_source": 24,
+        "name_raw": "ANAWUA",
+        "name": "Anawua",
+        "regency_raw": "KOLAKA",
+        "regency": "Kolaka",
+        "province_raw": "SULAWESI TENGGARA",
+        "province": "Sulawesi Tenggara",
+        "status_raw": "BERKEMBANG",
+        "status": "Berkembang",
+        "ipkt_display": 30.3,
+        "ipkt_reference_year": null,
+        "evidence_class": "OFFICIAL_CURRENT",
+        "source_ids": [
+          "SIPUKAT_HOME_2026"
+        ],
+        "qa_flags": []
+      },
+      {
+        "id": "KT-PRONAS-25",
+        "rank_source": 25,
+        "name_raw": "MUTIARA",
+        "name": "Mutiara",
+        "regency_raw": "MUNA",
+        "regency": "Muna",
+        "province_raw": "SULAWESI TENGGARA",
+        "province": "Sulawesi Tenggara",
+        "status_raw": "MANDIRI",
+        "status": "Mandiri",
+        "ipkt_display": 62.44,
+        "ipkt_reference_year": null,
+        "evidence_class": "OFFICIAL_CURRENT",
+        "source_ids": [
+          "SIPUKAT_HOME_2026"
+        ],
+        "qa_flags": []
+      },
+      {
+        "id": "KT-PRONAS-26",
+        "rank_source": 26,
+        "name_raw": "ASINUA/ROUTA",
+        "name": "Asinua/Routa",
+        "regency_raw": "KONAWE",
+        "regency": "Konawe",
+        "province_raw": "SULAWESI TENGGARA",
+        "province": "Sulawesi Tenggara",
+        "status_raw": "BERKEMBANG",
+        "status": "Berkembang",
+        "ipkt_display": 50.12,
+        "ipkt_reference_year": null,
+        "evidence_class": "OFFICIAL_CURRENT",
+        "source_ids": [
+          "SIPUKAT_HOME_2026"
+        ],
+        "qa_flags": []
+      },
+      {
+        "id": "KT-PRONAS-27",
+        "rank_source": 27,
+        "name_raw": "MAHALONA",
+        "name": "Mahalona",
+        "regency_raw": "LUWU TIMUR",
+        "regency": "Luwu Timur",
+        "province_raw": "SULAWESI SELATAN",
+        "province": "Sulawesi Selatan",
+        "status_raw": "MANDIRI",
+        "status": "Mandiri",
+        "ipkt_display": 67.58,
+        "ipkt_reference_year": null,
+        "evidence_class": "OFFICIAL_CURRENT",
+        "source_ids": [
+          "SIPUKAT_HOME_2026"
+        ],
+        "qa_flags": []
+      },
+      {
+        "id": "KT-PRONAS-28",
+        "rank_source": 28,
+        "name_raw": "PITURIASE",
+        "name": "Pituriase",
+        "regency_raw": "SIDRAP",
+        "regency": "Sidrap",
+        "province_raw": "SULAWESI SELATAN",
+        "province": "Sulawesi Selatan",
+        "status_raw": "BERKEMBANG",
+        "status": "Berkembang",
+        "ipkt_display": 48.72,
+        "ipkt_reference_year": null,
+        "evidence_class": "OFFICIAL_CURRENT",
+        "source_ids": [
+          "SIPUKAT_HOME_2026"
+        ],
+        "qa_flags": []
+      },
+      {
+        "id": "KT-PRONAS-29",
+        "rank_source": 29,
+        "name_raw": "TOBADAK",
+        "name": "Tobadak",
+        "regency_raw": "MAMUJU TENGAH",
+        "regency": "Mamuju Tengah",
+        "province_raw": "SULAWESI BARAT",
+        "province": "Sulawesi Barat",
+        "status_raw": "MANDIRI",
+        "status": "Mandiri",
+        "ipkt_display": 76.21,
+        "ipkt_reference_year": null,
+        "evidence_class": "OFFICIAL_CURRENT",
+        "source_ids": [
+          "SIPUKAT_HOME_2026"
+        ],
+        "qa_flags": []
+      },
+      {
+        "id": "KT-PRONAS-30",
+        "rank_source": 30,
+        "name_raw": "TUBBI TARAMANU",
+        "name": "Tubbi Taramanu",
+        "regency_raw": "POLEWALI MANDAR",
+        "regency": "Polewali Mandar",
+        "province_raw": "SULAWESI BARAT",
+        "province": "Sulawesi Barat",
+        "status_raw": "BERKEMBANG",
+        "status": "Berkembang",
+        "ipkt_display": 39.11,
+        "ipkt_reference_year": null,
+        "evidence_class": "OFFICIAL_CURRENT",
+        "source_ids": [
+          "SIPUKAT_HOME_2026"
+        ],
+        "qa_flags": []
+      },
+      {
+        "id": "KT-PRONAS-31",
+        "rank_source": 31,
+        "name_raw": "MAMBI MEHALAAN",
+        "name": "Mambi Mehalaan",
+        "regency_raw": "MAMASA",
+        "regency": "Mamasa",
+        "province_raw": "SULAWESI BARAT",
+        "province": "Sulawesi Barat",
+        "status_raw": "BERKEMBANG",
+        "status": "Berkembang",
+        "ipkt_display": 54.77,
+        "ipkt_reference_year": null,
+        "evidence_class": "OFFICIAL_CURRENT",
+        "source_ids": [
+          "SIPUKAT_HOME_2026"
+        ],
+        "qa_flags": []
+      },
+      {
+        "id": "KT-PRONAS-32",
+        "rank_source": 32,
+        "name_raw": "ULUMANDA",
+        "name": "Ulumanda",
+        "regency_raw": "MAJENE",
+        "regency": "Majene",
+        "province_raw": "SULAWESI BARAT",
+        "province": "Sulawesi Barat",
+        "status_raw": "BERKEMBANG",
+        "status": "Berkembang",
+        "ipkt_display": 48.81,
+        "ipkt_reference_year": null,
+        "evidence_class": "OFFICIAL_CURRENT",
+        "source_ids": [
+          "SIPUKAT_HOME_2026"
+        ],
+        "qa_flags": []
+      },
+      {
+        "id": "KT-PRONAS-33",
+        "rank_source": 33,
+        "name_raw": "SARUDU BARAS",
+        "name": "Sarudu Baras",
+        "regency_raw": "MAMUJU UTARA",
+        "regency": "Mamuju Utara",
+        "province_raw": "SULAWESI BARAT",
+        "province": "Sulawesi Barat",
+        "status_raw": "MANDIRI",
+        "status": "Mandiri",
+        "ipkt_display": 64.2,
+        "ipkt_reference_year": null,
+        "evidence_class": "OFFICIAL_CURRENT",
+        "source_ids": [
+          "SIPUKAT_HOME_2026"
+        ],
+        "qa_flags": []
+      },
+      {
+        "id": "KT-PRONAS-34",
+        "rank_source": 34,
+        "name_raw": "PALOLO",
+        "name": "Palolo",
+        "regency_raw": "SIGI",
+        "regency": "Sigi",
+        "province_raw": "SULAWESI TENGAH",
+        "province": "Sulawesi Tengah",
+        "status_raw": "MANDIRI",
+        "status": "Mandiri",
+        "ipkt_display": 61.24,
+        "ipkt_reference_year": null,
+        "evidence_class": "OFFICIAL_CURRENT",
+        "source_ids": [
+          "SIPUKAT_HOME_2026"
+        ],
+        "qa_flags": []
+      },
+      {
+        "id": "KT-PRONAS-35",
+        "rank_source": 35,
+        "name_raw": "BUNGKU",
+        "name": "Bungku",
+        "regency_raw": "MOROWALI",
+        "regency": "Morowali",
+        "province_raw": "SULAWESI TENGAH",
+        "province": "Sulawesi Tengah",
+        "status_raw": "MANDIRI",
+        "status": "Mandiri",
+        "ipkt_display": 53.2,
+        "ipkt_reference_year": null,
+        "evidence_class": "OFFICIAL_CURRENT",
+        "source_ids": [
+          "SIPUKAT_HOME_2026"
+        ],
+        "qa_flags": []
+      },
+      {
+        "id": "KT-PRONAS-36",
+        "rank_source": 36,
+        "name_raw": "TAMPOLORE",
+        "name": "Tampolore",
+        "regency_raw": "POSO",
+        "regency": "Poso",
+        "province_raw": "SULAWESI TENGAH",
+        "province": "Sulawesi Tengah",
+        "status_raw": "MANDIRI",
+        "status": "Mandiri",
+        "ipkt_display": 53.17,
+        "ipkt_reference_year": null,
+        "evidence_class": "OFFICIAL_CURRENT",
+        "source_ids": [
+          "SIPUKAT_HOME_2026"
+        ],
+        "qa_flags": []
+      },
+      {
+        "id": "KT-PRONAS-37",
+        "rank_source": 37,
+        "name_raw": "SUMALATA",
+        "name": "Sumalata",
+        "regency_raw": "GORONTALO UTARA",
+        "regency": "Gorontalo Utara",
+        "province_raw": "GORONTALO",
+        "province": "Gorontalo",
+        "status_raw": "MANDIRI",
+        "status": "Mandiri",
+        "ipkt_display": 65.0,
+        "ipkt_reference_year": null,
+        "evidence_class": "OFFICIAL_CURRENT",
+        "source_ids": [
+          "SIPUKAT_HOME_2026"
+        ],
+        "qa_flags": []
+      },
+      {
+        "id": "KT-PRONAS-38",
+        "rank_source": 38,
+        "name_raw": "PULAU MOROTAI",
+        "name": "Pulau Morotai",
+        "regency_raw": "MOROTAI",
+        "regency": "Morotai",
+        "province_raw": "MALUKU UTARA",
+        "province": "Maluku Utara",
+        "status_raw": "BERKEMBANG",
+        "status": "Berkembang",
+        "ipkt_display": 48.55,
+        "ipkt_reference_year": null,
+        "evidence_class": "OFFICIAL_CURRENT",
+        "source_ids": [
+          "SIPUKAT_HOME_2026"
+        ],
+        "qa_flags": []
+      },
+      {
+        "id": "KT-PRONAS-39",
+        "rank_source": 39,
+        "name_raw": "SAGEA WALEH",
+        "name": "Sagea Waleh",
+        "regency_raw": "HALMAHERA TENGAH",
+        "regency": "Halmahera Tengah",
+        "province_raw": "MALUKU UTARA",
+        "province": "Maluku Utara",
+        "status_raw": "BERKEMBANG",
+        "status": "Berkembang",
+        "ipkt_display": 19.37,
+        "ipkt_reference_year": null,
+        "evidence_class": "OFFICIAL_CURRENT",
+        "source_ids": [
+          "SIPUKAT_HOME_2026"
+        ],
+        "qa_flags": []
+      },
+      {
+        "id": "KT-PRONAS-40",
+        "rank_source": 40,
+        "name_raw": "PULAU BACAN",
+        "name": "Pulau Bacan",
+        "regency_raw": "HALMAHERA SELATAN",
+        "regency": "Halmahera Selatan",
+        "province_raw": "MALUKU UTARA",
+        "province": "Maluku Utara",
+        "status_raw": "BERKEMBANG",
+        "status": "Berkembang",
+        "ipkt_display": 32.14,
+        "ipkt_reference_year": null,
+        "evidence_class": "OFFICIAL_CURRENT",
+        "source_ids": [
+          "SIPUKAT_HOME_2026"
+        ],
+        "qa_flags": []
+      },
+      {
+        "id": "KT-PRONAS-41",
+        "rank_source": 41,
+        "name_raw": "PATLEAN",
+        "name": "Patlean",
+        "regency_raw": "HALMAHERA TIMUR",
+        "regency": "Halmahera Timur",
+        "province_raw": "MALUKU UTARA",
+        "province": "Maluku Utara",
+        "status_raw": "BERKEMBANG",
+        "status": "Berkembang",
+        "ipkt_display": 29.19,
+        "ipkt_reference_year": null,
+        "evidence_class": "OFFICIAL_CURRENT",
+        "source_ids": [
+          "SIPUKAT_HOME_2026"
+        ],
+        "qa_flags": []
+      },
+      {
+        "id": "KT-PRONAS-42",
+        "rank_source": 42,
+        "name_raw": "KLAMONO-SEGUN",
+        "name": "Klamono-Segun",
+        "regency_raw": "SORONG",
+        "regency": "Sorong",
+        "province_raw": "MALUKU UTARA",
+        "province": "Maluku Utara",
+        "status_raw": "BERKEMBANG",
+        "status": "Berkembang",
+        "ipkt_display": 41.96,
+        "ipkt_reference_year": null,
+        "evidence_class": "OFFICIAL_CURRENT",
+        "source_ids": [
+          "SIPUKAT_HOME_2026"
+        ],
+        "qa_flags": [
+          "SOURCE_GEOGRAPHY_INCONSISTENCY"
+        ],
+        "province_normalized_candidate": null,
+        "normalization_status": "requires_authoritative_confirmation",
+        "qa_note": "SIPUKAT current list displays Regency Sorong with Province Maluku Utara; preserve raw source and verify before production use."
+      },
+      {
+        "id": "KT-PRONAS-43",
+        "rank_source": 43,
+        "name_raw": "SENGGI",
+        "name": "Senggi",
+        "regency_raw": "KEEROM",
+        "regency": "Keerom",
+        "province_raw": "PAPUA",
+        "province": "Papua",
+        "status_raw": "BERKEMBANG",
+        "status": "Berkembang",
+        "ipkt_display": 46.92,
+        "ipkt_reference_year": null,
+        "evidence_class": "OFFICIAL_CURRENT",
+        "source_ids": [
+          "SIPUKAT_HOME_2026"
+        ],
+        "qa_flags": []
+      },
+      {
+        "id": "KT-PRONAS-44",
+        "rank_source": 44,
+        "name_raw": "SALOR",
+        "name": "Salor",
+        "regency_raw": "MERAUKE",
+        "regency": "Merauke",
+        "province_raw": "PAPUA SELATAN",
+        "province": "Papua Selatan",
+        "status_raw": "MANDIRI",
+        "status": "Mandiri",
+        "ipkt_display": 68.65,
+        "ipkt_reference_year": null,
+        "evidence_class": "OFFICIAL_CURRENT",
+        "source_ids": [
+          "SIPUKAT_HOME_2026"
+        ],
+        "qa_flags": []
+      },
+      {
+        "id": "KT-PRONAS-45",
+        "rank_source": 45,
+        "name_raw": "MUTING",
+        "name": "Muting",
+        "regency_raw": "MERAUKE",
+        "regency": "Merauke",
+        "province_raw": "PAPUA SELATAN",
+        "province": "Papua Selatan",
+        "status_raw": "BERKEMBANG",
+        "status": "Berkembang",
+        "ipkt_display": 58.09,
+        "ipkt_reference_year": null,
+        "evidence_class": "OFFICIAL_CURRENT",
+        "source_ids": [
+          "SIPUKAT_HOME_2026"
+        ],
+        "qa_flags": []
+      }
+    ]
+  },
+  "pilot": {
+    "id": "PILOT-PARIT-RAMBUTAN",
+    "name": "Parit Rambutan",
+    "areaCode": "KT-033",
+    "location": {
+      "regency": "Ogan Ilir",
+      "province": "Sumatera Selatan",
+      "mapAnchor": {
+        "lat": -3.1216497213575,
+        "lon": 104.6166668321,
+        "type": "navigation_anchor_not_legal_centroid"
+      }
+    },
+    "officialProfile": {
+      "publicationStatus": "Aktif",
+      "areaStatus": "Mandiri",
+      "criteria": "K-3",
+      "areaHa": 19281.76,
+      "population": 49264,
+      "ipkt": {
+        "value": 50.12,
+        "referenceYear": 2023
+      },
+      "villageCount": 16,
+      "shm": {
+        "issued": 3317,
+        "notYet": 1133,
+        "totalDisplayed": 4450
+      },
+      "connectivity": "Internet",
+      "planning": {
+        "RKT": 2012,
+        "RTSP": "Tanabang SP.1 2006",
+        "RSKP": null,
+        "legalBasis": "Kepmendesa PDTT No. 104 Tahun 2017"
+      },
+      "landStatus": "Non HPL",
+      "villageDevelopment": {
+        "Mandiri": 0,
+        "Maju": 2,
+        "Berkembang": 13,
+        "Tertinggal": 1,
+        "Sangat Tertinggal": 0
+      },
+      "ageProfile": {
+        "productive": 42822,
+        "under15": 4509,
+        "over65": 1933
+      },
+      "services": {
+        "SD": 20,
+        "SMP": 4,
+        "SMA": 1,
+        "Puskesmas": 5,
+        "Posyandu": 32,
+        "Pustu": 3,
+        "Posbindu": 12
+      },
+      "economy": {
+        "perCapitaIncomeMonthlyRp": 2915000,
+        "farmers": 10000,
+        "mainLivelihood": "Petani"
+      },
+      "sourceIds": [
+        "SIPUKAT_PARIT_2026"
+      ]
+    },
+    "fieldEvidence": [
+      {
+        "id": "PE-001",
+        "finding": "Land history can include replacement documents, boundary shifts, and changes in physical control/markers.",
+        "evidenceClass": "RESEARCH_OFFICIAL",
+        "sourceIds": [
+          "KEMDIKTISAINTEK_PARIT_2026"
+        ]
+      },
+      {
+        "id": "PE-002",
+        "finding": "Important documents are available but distributed across local-government offices, village offices and land institutions without a unified integrated system in the field-study context.",
+        "evidenceClass": "RESEARCH_OFFICIAL",
+        "sourceIds": [
+          "KEMDIKTISAINTEK_PARIT_2026"
+        ]
+      },
+      {
+        "id": "PE-003",
+        "finding": "Field team used by-name-by-parcel reconciliation linking identity, tenure history and coordinates with old maps, current land data and aerial imagery, then validated with residents.",
+        "evidenceClass": "RESEARCH_OFFICIAL",
+        "sourceIds": [
+          "KEMDIKTISAINTEK_PARIT_2026"
+        ]
+      },
+      {
+        "id": "PE-004",
+        "finding": "Ogan Ilir local government coordinated with BPN South Sumatra in April 2026 to accelerate long-awaited SHM resolution for SP2 Parit Rambutan.",
+        "evidenceClass": "OFFICIAL_CURRENT",
+        "sourceIds": [
+          "OGANILIR_SHM_2026"
+        ]
+      }
+    ],
+    "metricObservations": [
+      {
+        "metric": "IPKT display",
+        "value": 50.12,
+        "status": "Mandiri",
+        "referenceYear": 2023,
+        "evidenceClass": "OFFICIAL_CURRENT",
+        "sourceIds": [
+          "SIPUKAT_PARIT_2026"
+        ]
+      },
+      {
+        "metric": "INTRANS direct observation",
+        "value": 0.52,
+        "status": "Berkembang",
+        "referenceYear": 2025,
+        "evidenceClass": "OFFICIAL_CURRENT",
+        "sourceIds": [
+          "LAKIN_PPKTRANS_2025"
+        ]
+      }
+    ],
+    "metricGuardrail": "IPKT and INTRANS observations have different metric/vintage contexts. Display side-by-side only with explicit labels; never calculate a difference as improvement/deterioration without method reconciliation."
+  },
+  "authorityMatrix": [
+    {
+      "actorId": "ACT-KEMENTRANS",
+      "actor": "Kementerian Transmigrasi",
+      "role": "policy/process owner",
+      "responsibility": "Standar data transmigrasi, stable IDs, policy rules, central cross-province coordination",
+      "decisionBoundary": "Does not replace Kemendagri/BIG boundary authority or ATR/BPN land-right authority.",
+      "sourceIds": [
+        "PP19_2024",
+        "PP37_2025"
+      ]
+    },
+    {
+      "actorId": "ACT-PEMDA-PROV",
+      "actor": "Pemerintah Daerah Provinsi",
+      "role": "cross-regency coordinator",
+      "responsibility": "Coordination where transmigration crosses regency/city boundaries within one province",
+      "decisionBoundary": "Route derived from PP 19/2024; specific administrative actions remain with competent units.",
+      "sourceIds": [
+        "PP19_2024"
+      ]
+    },
+    {
+      "actorId": "ACT-PEMDA-KAB",
+      "actor": "Pemerintah Daerah Kabupaten/Kota",
+      "role": "local service owner",
+      "responsibility": "Transmigration implementation within regency/city; verify local records and service continuity",
+      "decisionBoundary": "Does not set national spatial standards.",
+      "sourceIds": [
+        "PP19_2024"
+      ]
+    },
+    {
+      "actorId": "ACT-BIG",
+      "actor": "Badan Informasi Geospasial",
+      "role": "spatial reference provider",
+      "responsibility": "Boundary geometry/reference data and technical metadata",
+      "decisionBoundary": "SINTAS consumes reference layer; it does not alter BIG geometry.",
+      "sourceIds": [
+        "BIG_DESAKEL_2026",
+        "BIG_DESAKEL_ARCGIS"
+      ]
+    },
+    {
+      "actorId": "ACT-KEMENDAGRI",
+      "actor": "Kementerian Dalam Negeri",
+      "role": "administrative reference authority",
+      "responsibility": "Administrative codes/data governance and territorial administration reference",
+      "decisionBoundary": "SINTAS records authoritative code/version; it does not create codes."
+    },
+    {
+      "actorId": "ACT-ATR",
+      "actor": "ATR/BPN",
+      "role": "land-right authority",
+      "responsibility": "Land registration/right status and authoritative parcel/SHM processes",
+      "decisionBoundary": "SINTAS only flags/routs related continuity cases.",
+      "sourceIds": [
+        "KEMDIKTISAINTEK_PARIT_2026",
+        "OGANILIR_SHM_2026"
+      ]
+    },
+    {
+      "actorId": "ACT-BPS",
+      "actor": "Badan Pusat Statistik",
+      "role": "statistical producer/user",
+      "responsibility": "Annual population data for 45 areas and statistical use of reference-date crosswalk",
+      "decisionBoundary": "Administrative records are not substituted for official statistical methodology.",
+      "sourceIds": [
+        "SDI_POP_45_BPS"
+      ]
+    },
+    {
+      "actorId": "ACT-BAPPENAS",
+      "actor": "Bappenas / Satu Data Indonesia",
+      "role": "policy indicator consumer/governance",
+      "responsibility": "RPJMN data needs and indicator metadata",
+      "decisionBoundary": "SINTAS supports reproducible crosswalk; indicator production remains with designated producer.",
+      "sourceIds": [
+        "SDI_DESA_45",
+        "SDI_INTRANS_45"
+      ]
+    }
+  ],
+  "dataContracts": [
+    {
+      "id": "DC-01",
+      "provider": "BIG/Kemendagri reference chain",
+      "dataset": "Administrative boundary version",
+      "minimumFields": [
+        "version_id",
+        "effective_date",
+        "WADMKD",
+        "WADMKC",
+        "WADMKK",
+        "WADMPR",
+        "KDEPUM",
+        "KDPKAB",
+        "KDPPUM",
+        "geometry",
+        "status",
+        "legal_reference"
+      ],
+      "frequency": "on authoritative update",
+      "freshnessRule": "Newest published version, but preserve all prior versions",
+      "sourceIds": [
+        "BIG_DESAKEL_2026",
+        "BIG_DESAKEL_ARCGIS"
+      ]
+    },
+    {
+      "id": "DC-02",
+      "provider": "Kementerian Transmigrasi",
+      "dataset": "Stable transmigration object registry",
+      "minimumFields": [
+        "area_id",
+        "skp_id",
+        "sp_id",
+        "cohort_id",
+        "placement_date",
+        "service_state",
+        "source_document_id"
+      ],
+      "frequency": "event-driven + periodic reconciliation",
+      "freshnessRule": "No overwrite of historical lineage",
+      "sourceIds": [
+        "SIPUKAT_HOME_2026",
+        "LAKIN_FP3KT_2025"
+      ]
+    },
+    {
+      "id": "DC-03",
+      "provider": "ATR/BPN / authorized land data",
+      "dataset": "Land-service reference",
+      "minimumFields": [
+        "parcel_reference_or_null",
+        "certificate_reference_or_null",
+        "service_status",
+        "last_verified_at",
+        "authority"
+      ],
+      "frequency": "as authorized",
+      "freshnessRule": "Sensitive/controlled; competition MVP uses synthetic data only",
+      "sourceIds": [
+        "KEMDIKTISAINTEK_PARIT_2026",
+        "OGANILIR_SHM_2026"
+      ]
+    },
+    {
+      "id": "DC-04",
+      "provider": "BPS",
+      "dataset": "Population of 45 transmigration areas",
+      "minimumFields": [
+        "reference_year",
+        "area_reference",
+        "population",
+        "method_note"
+      ],
+      "frequency": "annual",
+      "freshnessRule": "Use official statistical release/producer vintage",
+      "sourceIds": [
+        "SDI_POP_45_BPS"
+      ]
+    }
+  ],
+  "claimGuardrails": {
+    "allowed": [
+      "Official June 2026 village-boundary metadata records unresolved/misaligned conditions, including some split villages lacking geometry/codes.",
+      "Kementrans performance reporting identifies untimely regional data delivery and limited HR as contributors to slow information exchange.",
+      "Permentrans 9/2025 explicitly connects transmigration planning to administrative boundaries and village names/codes.",
+      "SIPUKAT already provides a national spatial-information platform; SINTAS is therefore designed as a continuity/change-impact layer, not a replacement map.",
+      "Parit Rambutan is a real current pilot context with 16 villages and unresolved land-service context documented by official sources."
+    ],
+    "conditional": [
+      "Boundary changes can create service-continuity risk — treat as a mechanism/hypothesis to validate with real cases, not a universal causal fact.",
+      "SINTAS can improve routing/detection — claim only after task-based evaluation.",
+      "Reference-date crosswalk can support BPS/Kementrans statistics — it does not replace official statistical production."
+    ],
+    "prohibited": [
+      "Indonesia has no transmigration data or map.",
+      "SINTAS determines official administrative boundaries.",
+      "A polygon overlap proves a household legally belongs to a village.",
+      "SINTAS issues SHM or decides land ownership.",
+      "Scenario households or boundary events are real Parit Rambutan cases.",
+      "IPKT 2023 and INTRANS 2025 are directly comparable measures without methodological reconciliation.",
+      "SINTAS is proven to reduce national service time before empirical evaluation."
+    ]
+  },
+  "dataQualityIssues": [
+    {
+      "id": "DQ-001",
+      "severity": "medium",
+      "object": "PONU",
+      "issue": "SIPUKAT current display spells regency 'TIMOR TENGAH UATAR'.",
+      "handling": "Preserve raw text; show normalized candidate Timor Tengah Utara only as unconfirmed mapping.",
+      "sourceIds": [
+        "SIPUKAT_HOME_2026"
+      ]
+    },
+    {
+      "id": "DQ-002",
+      "severity": "high",
+      "object": "KLAMONO-SEGUN",
+      "issue": "SIPUKAT current display pairs Regency Sorong with Province Maluku Utara.",
+      "handling": "Flag for authoritative verification; do not silently reassign province.",
+      "sourceIds": [
+        "SIPUKAT_HOME_2026"
+      ]
+    },
+    {
+      "id": "DQ-003",
+      "severity": "medium",
+      "object": "PARIT RAMBUTAN",
+      "issue": "SIPUKAT displays IPKT 50.12 (2023), status Mandiri, while 2025 Lakin direct INTRANS observation reports 0.52, status Berkembang.",
+      "handling": "Treat as different metric/vintage contexts; display provenance, not a contradiction score.",
+      "sourceIds": [
+        "SIPUKAT_PARIT_2026",
+        "LAKIN_PPKTRANS_2025"
+      ]
+    },
+    {
+      "id": "DQ-004",
+      "severity": "high",
+      "object": "BIG June 2026 boundaries",
+      "issue": "Dataset notes misalignment, undefined areas, split villages lacking geometry/codes, floating villages and potentially overlapping indicative claims.",
+      "handling": "Use boundary-status badge and manual verification gate.",
+      "sourceIds": [
+        "BIG_DESAKEL_2026"
+      ]
+    },
+    {
+      "id": "DQ-005",
+      "severity": "low",
+      "object": "Parit Rambutan product context",
+      "issue": "Some raw sector output figures on the official profile should be revalidated before analytical use.",
+      "handling": "Exclude nonessential product-output figures from core SINTAS KPIs.",
+      "sourceIds": [
+        "SIPUKAT_PARIT_2026"
+      ]
+    }
+  ],
+  "landEvents": [
+    {
+      "id": "EV-CERT",
+      "name": "Penerbitan/perubahan status sertifikat",
+      "category": "land_right",
+      "frequency": "event-driven",
+      "defaultImpact": "update status + close/open risk"
+    },
+    {
+      "id": "EV-SPATIAL",
+      "name": "Perubahan tata ruang/delineasi",
+      "category": "spatial_policy",
+      "frequency": "event-driven",
+      "defaultImpact": "re-run spatial compatibility check"
+    },
+    {
+      "id": "EV-BUSINESS",
+      "name": "Pengajuan izin/kegiatan usaha",
+      "category": "licensing",
+      "frequency": "event-driven",
+      "defaultImpact": "pre-clearance + conflict alert"
+    },
+    {
+      "id": "EV-BMN",
+      "name": "Perubahan status BMN/aset negara",
+      "category": "asset",
+      "frequency": "event-driven",
+      "defaultImpact": "asset ownership/status reconciliation"
+    },
+    {
+      "id": "EV-INHERIT",
+      "name": "Perpindahan/pewarisan/penguasaan",
+      "category": "tenure_change",
+      "frequency": "event-driven",
+      "defaultImpact": "ownership/evidence verification"
+    },
+    {
+      "id": "EV-LANDUSE",
+      "name": "Perubahan penggunaan lahan",
+      "category": "land_use",
+      "frequency": "event-driven",
+      "defaultImpact": "compatibility review"
+    },
+    {
+      "id": "EV-CONCESSION",
+      "name": "Konsesi baru",
+      "category": "concession",
+      "frequency": "event-driven",
+      "defaultImpact": "overlap scan + authority routing"
+    },
+    {
+      "id": "EV-ACQ",
+      "name": "Pengadaan tanah",
+      "category": "land_acquisition",
+      "frequency": "event-driven",
+      "defaultImpact": "affected-object case creation"
+    },
+    {
+      "id": "EV-COMPLAINT",
+      "name": "Konflik/aduan masyarakat",
+      "category": "complaint",
+      "frequency": "event-driven",
+      "defaultImpact": "priority review + evidence consolidation"
+    },
+    {
+      "id": "EV-ADMIN",
+      "name": "Perubahan administrasi wilayah",
+      "category": "administrative",
+      "frequency": "event-driven",
+      "defaultImpact": "update administrative reference / lineage"
+    }
+  ],
+  "riskDimensions": [
+    {
+      "id": "RD-LEGAL",
+      "name": "Kepastian Hak",
+      "question": "Apakah status hak/sertifikat jelas, mutakhir, dan dapat ditelusuri?",
+      "signals": [
+        "belum bersertifikat",
+        "dokumen hak tidak lengkap",
+        "status berbeda antarsumber",
+        "riwayat tidak tersambung"
+      ]
+    },
+    {
+      "id": "RD-SPATIAL",
+      "name": "Tumpang Tindih Spasial",
+      "question": "Apakah bidang/kawasan beririsan dengan rezim ruang lain yang memerlukan klarifikasi?",
+      "signals": [
+        "kawasan hutan",
+        "HGU/HPL/Hak Pakai lain",
+        "konsesi/IUP",
+        "rencana pengadaan",
+        "batas indikatif"
+      ]
+    },
+    {
+      "id": "RD-ADMIN",
+      "name": "Konsistensi Administratif",
+      "question": "Apakah kode/desa/kabupaten/referensi administratif konsisten terhadap objek yang sama?",
+      "signals": [
+        "kode berubah",
+        "desa mekar",
+        "kabupaten berbeda",
+        "nomenklatur tidak sinkron"
+      ]
+    },
+    {
+      "id": "RD-ASSET",
+      "name": "Status Aset Negara",
+      "question": "Apakah terdapat dimensi BMN/aset pemerintah yang belum sinkron dengan status penguasaan/pemanfaatan?",
+      "signals": [
+        "status BMN tidak jelas",
+        "penggunaan oleh pihak lain",
+        "belum ada handoff/penghapusan/pemanfaatan yang terdokumentasi"
+      ]
+    },
+    {
+      "id": "RD-LICENSE",
+      "name": "Tekanan Perizinan/Pemanfaatan",
+      "question": "Apakah ada izin/kegiatan usaha atau konsesi yang berpotensi berbenturan dengan objek transmigrasi?",
+      "signals": [
+        "permohonan izin baru",
+        "IUP aktif",
+        "kegiatan usaha",
+        "perubahan penggunaan lahan"
+      ]
+    },
+    {
+      "id": "RD-SERVICE",
+      "name": "Risiko Pelayanan Transmigran",
+      "question": "Apakah risiko status tanah dapat menghambat layanan/hak yang masih berjalan?",
+      "signals": [
+        "SHM belum terbit",
+        "deadline layanan mendekat",
+        "kasus lama tanpa owner",
+        "aduan masyarakat"
+      ]
+    },
+    {
+      "id": "RD-EVIDENCE",
+      "name": "Kualitas Bukti",
+      "question": "Apakah sumber, tanggal, peta, dokumen, dan otoritas status cukup untuk keputusan?",
+      "signals": [
+        "dokumen hilang",
+        "sumber tidak mutakhir",
+        "geometri indikatif",
+        "status konflik",
+        "vintage tidak jelas"
+      ]
+    }
+  ],
+  "riskModel": {
+    "name": "TransLand Risk Lens",
+    "type": "transparent rule-based prioritization",
+    "principle": "Bukan skor legalitas. Skor hanya prioritas review berbasis signal yang terverifikasi.",
+    "weightsDemoOnly": {
+      "legal_uncertainty": 25,
+      "spatial_overlap": 20,
+      "service_deadline": 15,
+      "cross_authority_conflict": 15,
+      "evidence_gap": 10,
+      "active_complaint": 10,
+      "data_staleness": 5
+    },
+    "guardrail": "Bobot bersifat SIMULASI untuk prototype dan harus divalidasi melalui expert elicitation sebelum penggunaan operasional.",
+    "bands": [
+      {
+        "id": "LOW",
+        "label": "Rendah",
+        "meaning": "Tidak ada konflik signifikan yang terdeteksi dari data terhubung; tetap bukan opini hukum."
+      },
+      {
+        "id": "MEDIUM",
+        "label": "Perlu review",
+        "meaning": "Ada gap/mismatch yang memerlukan verifikasi."
+      },
+      {
+        "id": "HIGH",
+        "label": "Prioritas",
+        "meaning": "Ada overlap, service risk, atau cross-authority issue yang memerlukan tindak lanjut terarah."
+      },
+      {
+        "id": "CRITICAL",
+        "label": "Kritis",
+        "meaning": "Risiko tinggi + layanan/keputusan aktif; perlu eskalasi manusia segera."
+      }
+    ]
+  },
+  "statusAssertionsSchema": {
+    "requiredFields": [
+      "object_id",
+      "regime",
+      "status",
+      "provider",
+      "source_id",
+      "effective_from",
+      "effective_to",
+      "last_verified_at",
+      "evidence_class",
+      "authority_scope"
+    ],
+    "regimes": [
+      "TRANSMIGRATION_AREA",
+      "LAND_RIGHT_ATR_BPN",
+      "FOREST_STATUS",
+      "MINING_CONCESSION",
+      "BUSINESS_LICENSE",
+      "STATE_ASSET_BMN",
+      "ADMINISTRATIVE_AREA",
+      "SPATIAL_PLAN",
+      "LAND_SERVICE",
+      "COMPLAINT"
+    ]
+  },
+  "decisionGates": [
+    {
+      "id": "DG1",
+      "name": "Object identity verified",
+      "question": "Apakah semua record merujuk pada objek/bidang yang sama?",
+      "required": true
+    },
+    {
+      "id": "DG2",
+      "name": "Source and vintage verified",
+      "question": "Apakah sumber, tanggal efektif, dan otoritas tiap status tersedia?",
+      "required": true
+    },
+    {
+      "id": "DG3",
+      "name": "Cross-regime consistency checked",
+      "question": "Apakah status lintas ATR/BPN–Transmigrasi–Kehutanan–ESDM–BMN–administrasi saling selaras?",
+      "required": true
+    },
+    {
+      "id": "DG4",
+      "name": "Spatial conflict screened",
+      "question": "Apakah ada overlap/potensi konflik spasial yang perlu verifikasi?",
+      "required": true
+    },
+    {
+      "id": "DG5",
+      "name": "Service impact checked",
+      "question": "Apakah risiko memengaruhi SHM, layanan aktif, pengadaan, izin, atau aduan?",
+      "required": true
+    },
+    {
+      "id": "DG6",
+      "name": "Authority owner assigned",
+      "question": "Apakah instansi/role yang harus bertindak sudah jelas?",
+      "required": true
+    },
+    {
+      "id": "DG7",
+      "name": "Next action documented",
+      "question": "Apakah tindakan berikutnya dan target review tercatat?",
+      "required": true
+    },
+    {
+      "id": "DG8",
+      "name": "Closure evidence complete",
+      "question": "Apakah penyelesaian memiliki dasar/evidence dan audit trail?",
+      "required": true
+    }
+  ],
+  "objectRegistryDemo": [
+    {
+      "objectId": "TL-PR-0001",
+      "label": "Bidang Demo PR-0001",
+      "area": "Parit Rambutan",
+      "sp": "SP2 Demo",
+      "evidenceClass": "SCENARIO",
+      "riskBand": "CRITICAL",
+      "riskScoreDemo": 88,
+      "riskReasons": [
+        "SHM belum tuntas",
+        "overlap kawasan hutan simulasi",
+        "dokumen lintas instansi belum sinkron",
+        "layanan pertanahan aktif"
+      ],
+      "currentOwner": "Kementerian Transmigrasi + ATR/BPN — koordinasi",
+      "nextAction": "Rekonsiliasi by-name-by-parcel dan validasi status kawasan",
+      "reviewDue": "2026-09-18",
+      "assertions": [
+        {
+          "regime": "TRANSMIGRATION_AREA",
+          "status": "IN_AREA",
+          "provider": "Kementerian Transmigrasi",
+          "source_id": "SIPUKAT_PARIT_2026",
+          "effective_from": "2026-01-01",
+          "effective_to": null,
+          "last_verified_at": "2026-09-13",
+          "evidence_class": "SCENARIO",
+          "authority_scope": "Transmigrasi"
+        },
+        {
+          "regime": "LAND_RIGHT_ATR_BPN",
+          "status": "SHM_IN_PROCESS",
+          "provider": "ATR/BPN (simulasi status)",
+          "source_id": null,
+          "effective_from": "2026-04-01",
+          "effective_to": null,
+          "last_verified_at": "2026-09-13",
+          "evidence_class": "SCENARIO",
+          "authority_scope": "Pertanahan"
+        },
+        {
+          "regime": "FOREST_STATUS",
+          "status": "POTENTIAL_OVERLAP",
+          "provider": "Kehutanan (simulasi)",
+          "source_id": null,
+          "effective_from": "2026-01-01",
+          "effective_to": null,
+          "last_verified_at": "2026-09-13",
+          "evidence_class": "SCENARIO",
+          "authority_scope": "Kawasan hutan"
+        }
+      ]
+    },
+    {
+      "objectId": "TL-PR-0002",
+      "label": "Bidang Demo PR-0002",
+      "area": "Parit Rambutan",
+      "sp": "SP2 Demo",
+      "evidenceClass": "SCENARIO",
+      "riskBand": "HIGH",
+      "riskScoreDemo": 72,
+      "riskReasons": [
+        "permohonan kegiatan usaha baru simulasi",
+        "status bidang belum final"
+      ],
+      "currentOwner": "Pemda / Kementerian Transmigrasi — triase",
+      "nextAction": "Pre-clearance lintas rezim sebelum rekomendasi lokasi",
+      "reviewDue": "2026-09-20",
+      "assertions": [
+        {
+          "regime": "TRANSMIGRATION_AREA",
+          "status": "IN_AREA",
+          "provider": "Kementerian Transmigrasi",
+          "source_id": "SIPUKAT_PARIT_2026",
+          "effective_from": "2026-01-01",
+          "effective_to": null,
+          "last_verified_at": "2026-09-13",
+          "evidence_class": "SCENARIO",
+          "authority_scope": "Transmigrasi"
+        },
+        {
+          "regime": "BUSINESS_LICENSE",
+          "status": "APPLICATION_PENDING",
+          "provider": "OSS/BKPM (simulasi)",
+          "source_id": null,
+          "effective_from": "2026-09-10",
+          "effective_to": null,
+          "last_verified_at": "2026-09-13",
+          "evidence_class": "SCENARIO",
+          "authority_scope": "Perizinan"
+        }
+      ]
+    },
+    {
+      "objectId": "TL-PR-0003",
+      "label": "Bidang Demo PR-0003",
+      "area": "Parit Rambutan",
+      "sp": "SP1 Demo",
+      "evidenceClass": "SCENARIO",
+      "riskBand": "MEDIUM",
+      "riskScoreDemo": 46,
+      "riskReasons": [
+        "perubahan administrasi desa",
+        "lineage perlu diperbarui"
+      ],
+      "currentOwner": "Data steward / Pemda",
+      "nextAction": "Update administrative crosswalk tanpa mengubah status hak",
+      "reviewDue": "2026-09-25",
+      "assertions": [
+        {
+          "regime": "ADMINISTRATIVE_AREA",
+          "status": "REFERENCE_CHANGED",
+          "provider": "Kemendagri/BIG (simulasi event)",
+          "source_id": null,
+          "effective_from": "2026-09-01",
+          "effective_to": null,
+          "last_verified_at": "2026-09-13",
+          "evidence_class": "SCENARIO",
+          "authority_scope": "Administrasi wilayah"
+        }
+      ]
+    },
+    {
+      "objectId": "TL-PR-0004",
+      "label": "Bidang Demo PR-0004",
+      "area": "Parit Rambutan",
+      "sp": "SP1 Demo",
+      "evidenceClass": "SCENARIO",
+      "riskBand": "LOW",
+      "riskScoreDemo": 15,
+      "riskReasons": [
+        "status terhubung dan tidak ada conflict signal pada data demo"
+      ],
+      "currentOwner": "Monitoring",
+      "nextAction": "Periodic verification",
+      "reviewDue": "2026-12-31",
+      "assertions": [
+        {
+          "regime": "LAND_RIGHT_ATR_BPN",
+          "status": "SHM_ISSUED",
+          "provider": "ATR/BPN (simulasi)",
+          "source_id": null,
+          "effective_from": "2025-03-20",
+          "effective_to": null,
+          "last_verified_at": "2026-09-13",
+          "evidence_class": "SCENARIO",
+          "authority_scope": "Pertanahan"
+        }
+      ]
+    }
+  ],
+  "eventQueueDemo": [
+    {
+      "eventId": "TL-EVT-001",
+      "type": "EV-CERT",
+      "objectId": "TL-PR-0001",
+      "time": "2026-09-12T09:30:00+07:00",
+      "description": "Update status layanan sertifikasi diterima",
+      "effect": "Recompute risk + update service milestone",
+      "evidenceClass": "SCENARIO"
+    },
+    {
+      "eventId": "TL-EVT-002",
+      "type": "EV-BUSINESS",
+      "objectId": "TL-PR-0002",
+      "time": "2026-09-12T11:10:00+07:00",
+      "description": "Permohonan kegiatan usaha baru terdeteksi pada objek demo",
+      "effect": "Run pre-clearance",
+      "evidenceClass": "SCENARIO"
+    },
+    {
+      "eventId": "TL-EVT-003",
+      "type": "EV-ADMIN",
+      "objectId": "TL-PR-0003",
+      "time": "2026-09-13T08:00:00+07:00",
+      "description": "Referensi desa berubah pada skenario demo",
+      "effect": "Update crosswalk + review lineage",
+      "evidenceClass": "SCENARIO"
+    },
+    {
+      "eventId": "TL-EVT-004",
+      "type": "EV-COMPLAINT",
+      "objectId": "TL-PR-0001",
+      "time": "2026-09-13T10:20:00+07:00",
+      "description": "Aduan masyarakat simulasi masuk",
+      "effect": "Escalate priority + assign owner",
+      "evidenceClass": "SCENARIO"
+    }
+  ],
+  "caseWorkflowDemo": [
+    {
+      "caseId": "TL-CASE-001",
+      "objectId": "TL-PR-0001",
+      "title": "Rekonsiliasi status hak dan potensi overlap",
+      "priority": "P1",
+      "state": "IN_PROGRESS",
+      "reason": "Status layanan pertanahan aktif + overlap signal + evidence lintas-instansi belum selaras",
+      "owner": "Kementerian Transmigrasi — koordinator kasus demo",
+      "participants": [
+        "ATR/BPN",
+        "Kementerian Kehutanan",
+        "Pemda"
+      ],
+      "nextAction": "Rekonsiliasi by-name-by-parcel dan validasi status authoritative",
+      "reviewDue": "2026-09-18",
+      "evidenceClass": "SCENARIO"
+    },
+    {
+      "caseId": "TL-CASE-002",
+      "objectId": "TL-PR-0002",
+      "title": "Pre-clearance sebelum keputusan lokasi usaha",
+      "priority": "P1",
+      "state": "TRIAGE",
+      "reason": "Permohonan usaha baru berada pada objek transmigrasi demo",
+      "owner": "Pemda/Kementrans — triase demo",
+      "participants": [
+        "OSS/BKPM",
+        "ATR/BPN",
+        "ESDM bila relevan"
+      ],
+      "nextAction": "Check seluruh regime assertion sebelum rekomendasi lanjut",
+      "reviewDue": "2026-09-20",
+      "evidenceClass": "SCENARIO"
+    }
+  ],
+  "preClearanceDemo": {
+    "description": "Simulation of a pre-decision land-status check. No permit decision is made by TransLand.",
+    "inputs": [
+      "coordinate / polygon demo",
+      "activity type",
+      "applicant case ID"
+    ],
+    "checks": [
+      "transmigration area",
+      "land right status",
+      "forest status",
+      "mining/concession status",
+      "state asset status if applicable",
+      "administrative area",
+      "spatial-plan status",
+      "active complaints/cases"
+    ],
+    "outputs": [
+      "CLEAR_NO_CONFLICT_FOUND",
+      "CONDITIONAL_REVIEW",
+      "HIGH_CONFLICT_REVIEW"
+    ],
+    "guardrail": "Output is an administrative screening recommendation, not an approval or legal opinion."
+  },
+  "indicatorDictionary": [
+    {
+      "id": "KPI-R1",
+      "name": "Bidang dengan status lintas-rezim lengkap",
+      "definition": "Objek yang memiliki minimum status mandatory sesuai scope prototype.",
+      "unit": "percent",
+      "class": "DERIVED"
+    },
+    {
+      "id": "KPI-R2",
+      "name": "High-risk object count",
+      "definition": "Jumlah objek demo dengan band HIGH/CRITICAL.",
+      "unit": "objects",
+      "class": "DERIVED"
+    },
+    {
+      "id": "KPI-R3",
+      "name": "Cases without owner",
+      "definition": "Kasus yang belum memiliki accountable owner.",
+      "unit": "cases",
+      "class": "DERIVED"
+    },
+    {
+      "id": "KPI-R4",
+      "name": "Mean case age",
+      "definition": "Rata-rata umur kasus terbuka.",
+      "unit": "days",
+      "class": "DERIVED"
+    },
+    {
+      "id": "KPI-R5",
+      "name": "First-time-right reconciliation",
+      "definition": "Kasus yang terselesaikan tanpa rework.",
+      "unit": "percent",
+      "class": "DERIVED"
+    },
+    {
+      "id": "KPI-R6",
+      "name": "Pre-clearance routing accuracy",
+      "definition": "Ketepatan route terhadap scenario ground truth.",
+      "unit": "percent",
+      "class": "DERIVED"
+    },
+    {
+      "id": "KPI-R7",
+      "name": "Evidence completeness",
+      "definition": "Share of required evidence fields available per object/case.",
+      "unit": "percent",
+      "class": "DERIVED"
+    }
+  ],
+  "evaluationPlan": {
+    "design": "Design Science Research with scenario-based and task-based evaluation.",
+    "primaryTasks": [
+      "identify the highest-risk object",
+      "explain why it is risky using source-linked evidence",
+      "identify responsible authority",
+      "determine next action",
+      "screen a new permit/location request before decision"
+    ],
+    "comparison": "manual multi-source lookup vs TransLand",
+    "primaryOutcomes": [
+      "time-to-correct-risk-identification",
+      "routing accuracy",
+      "evidence completeness recognition"
+    ],
+    "secondaryOutcomes": [
+      "rework count",
+      "first-time-right rate",
+      "case-without-owner rate",
+      "task completion",
+      "SUS"
+    ],
+    "guardrail": "No claim that national legal certainty improves until tested in real operational deployment."
+  },
+  "roadmap": [
+    {
+      "phase": "0–3 bulan",
+      "focus": "Data contract + pilot registry",
+      "output": "schema objek, status assertion, source/vintage rule, synthetic pilot"
+    },
+    {
+      "phase": "3–6 bulan",
+      "focus": "Risk and case orchestration MVP",
+      "output": "risk lens, event queue, case tracker, pre-clearance sandbox"
+    },
+    {
+      "phase": "6–12 bulan",
+      "focus": "Controlled agency pilot",
+      "output": "read-only connectors where legally permitted, role-based access, selected real cases"
+    },
+    {
+      "phase": "12–24 bulan",
+      "focus": "National replication standard",
+      "output": "API/data-contract standard + replication playbook"
+    }
+  ],
+  "claimGuardrailsV2": {
+    "allowed": [
+      "Land-transmigration problems include unresolved certification and documented overlap with forest-area and other land-control regimes.",
+      "TransLand prioritizes risk review by connecting statuses from multiple regimes to one stable object.",
+      "The prototype can be evaluated on detection, routing, evidence recognition and workflow performance."
+    ],
+    "conditional": [
+      "A single source of truth means a federated cross-regime registry, not one ministry owning all truth.",
+      "Risk scoring is only a prioritization aid; weights require expert validation.",
+      "Pre-clearance can reduce late conflict detection only after empirical pilot evaluation."
+    ],
+    "prohibited": [
+      "TransLand determines legal ownership.",
+      "All transmigration land conflicts are caused by poor data integration.",
+      "Every spatial overlap is an illegal conflict.",
+      "A green status is legal approval.",
+      "Synthetic demo events/objects are real Parit Rambutan cases."
+    ]
+  }
+}
